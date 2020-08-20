@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "The Wall";
+}
+@model Message
+
+<div class="container">
+    <div class="row">
+        <form asp-action="Create" asp-controller="Wall" method="POST">
+            <div class="form-group">
+                <label asp-for="Body" class="d-block"></label>
+                <textarea cols="100" rows="5" asp-for="Body"></textarea>
+                <span class="text-danger" asp-validation-for="Body"></span>
+            </div>
+
+            <div class="col-3 offset-9">
+                <button type="submit" class="btn btn-primary mb-4">Post a message</button>
+            </div>
+        </form>
+    </div>
+
+    @foreach (var message in ViewBag.AllMessages)
+    {
+        <div class="card">
+            <div class="card-title pt-2 pl-2">
+                <p>@message.Author.FirstName @message.Author.LastName - @message.DisplayCreatedAt</p>
+            </div>
+            <div class="card-body">
+                <p>@message.Body</p>
+                @if (message.UserId == Context.Session.GetInt32("userId") && (DateTime.Now - message.CreatedAt).TotalMinutes < 30)
+                {
+                    <a 
+                        asp-action="Delete" 
+                        asp-controller="Wall" 
+                        asp-route-messageId="@message.MessageId" 
+                        class="btn btn-danger"
+                    >
+                        Delete Message
+                    </a>
+                }
+            </div>
+        </div>
+
+        @foreach (var comment in message.MessageComments)
+        {
+            <div class="card">
+                <div class="card-title pt-2 pl-2">
+                    <p>@comment.User.FirstName @comment.User.LastName - @comment.DisplayCreatedAt</p>
+                </div>
+                <div class="card-body">
+                    <p>@comment.CommentBody</p>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            <form asp-action="CreateComment" asp-controller="Wall" asp-route-messageId="@message.MessageId" method="POST">
+                <div class="form-group">
+                    <label for="commentBody" class="d-block">Post a comment</label>
+                    <textarea name="commentBody" id="commentBody" cols="100" rows="3"></textarea>
+                </div>
+
+                <div class="col-3 offset-9">
+                    <button type="submit" class="btn btn-success mb-4">Post a comment</button>
+                </div>
+            </form>
+        </div>
+    }
+</div>
